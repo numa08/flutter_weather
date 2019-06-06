@@ -1,8 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_weather/repositories/respositories.dart';
 import 'package:http/http.dart' as http;
 
+import 'bloc/bloc.dart';
 import 'widgets/widgets.dart';
 
 class SimpleBlocDelegate extends BlocDelegate {
@@ -20,7 +22,7 @@ void main() {
   runApp(App(weatherRepository: weatherRepository));
 }
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   final WeatherRepository weatherRepository;
 
   const App({Key key, this.weatherRepository})
@@ -28,7 +30,29 @@ class App extends StatelessWidget {
         super(key: key);
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-      title: 'Flutter Weather',
-      home: Weather(weatherRepository: weatherRepository));
+  State<StatefulWidget> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  ThemeBloc _themeBloc = ThemeBloc();
+
+  @override
+  Widget build(BuildContext context) => BlocProvider(
+        bloc: _themeBloc,
+        child: BlocBuilder(
+            bloc: _themeBloc,
+            builder: (_, ThemeState themeState) => MaterialApp(
+                  title: 'Flutter Weather',
+                  theme: themeState.theme,
+                  home: Weather(
+                    weatherRepository: widget.weatherRepository,
+                  ),
+                )),
+      );
+
+  @override
+  void dispose() {
+    _themeBloc.dispose();
+    super.dispose();
+  }
 }
